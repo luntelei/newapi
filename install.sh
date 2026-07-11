@@ -248,6 +248,8 @@ install_binary() {
     local backup_binary=""
     local service_was_active=0
 
+    systemctl daemon-reload
+
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
         service_was_active=1
         log_info "Stopping ${SERVICE_NAME} before replacing binary..."
