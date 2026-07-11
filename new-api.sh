@@ -18,7 +18,7 @@ ENV_FILE="${INSTALL_DIR}/.env"
 BIN_PATH="${INSTALL_DIR}/new-api"
 SERVICE_PATH="/etc/systemd/system/new-api.service"
 CLI_PATH="/usr/bin/new-api"
-INSTALL_URL="${NEW_API_INSTALL_URL:-https://raw.githubusercontent.com/QuantumNous/new-api/main/install.sh}"
+INSTALL_URL="${NEW_API_INSTALL_URL:-https://raw.githubusercontent.com/luntelei/newapi/main/install.sh}"
 
 log_info() { echo -e "${green}[INFO]${plain} $*"; }
 log_warn() { echo -e "${yellow}[WARN]${plain} $*"; }
