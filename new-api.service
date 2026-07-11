@@ -1,0 +1,15 @@
+[Unit]
+Description=New API Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/new-api
+EnvironmentFile=/usr/local/new-api/.env
+ExecStart=/usr/local/new-api/new-api --port ${PORT} --log-dir /usr/local/new-api/logs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
