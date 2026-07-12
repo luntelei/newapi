@@ -64,7 +64,7 @@ check_install() {
 get_env_value() {
     local key="$1"
     [[ -f "${ENV_FILE}" ]] || return 0
-    grep -E "^${key}=" "${ENV_FILE}" | tail -n 1 | cut -d= -f2-
+    awk -F= -v key="${key}" '$1 == key { value = substr($0, length(key) + 2) } END { if (value != "") print value }' "${ENV_FILE}"
 }
 
 mask_secret() {

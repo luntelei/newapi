@@ -73,8 +73,8 @@ install_base() {
         zypper -q install -y curl wget tar ca-certificates
         ;;
     *)
-        apt-get update
-        DEBIAN_FRONTEND=noninteractive apt-get install -y -q curl wget tar ca-certificates
+        apt_wait apt-get update
+        apt_wait env DEBIAN_FRONTEND=noninteractive apt-get install -y -q curl wget tar ca-certificates
         ;;
     esac
 
@@ -82,6 +82,23 @@ install_base() {
         log_error "sha256sum is required but was not found after dependency installation."
         exit 1
     fi
+}
+
+apt_wait() {
+    local attempt
+    for attempt in $(seq 1 30); do
+        if "$@"; then
+            return 0
+        fi
+        if fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock >/dev/null 2>&1; then
+            log_warn "apt/dpkg is locked by another process; waiting (${attempt}/30)..."
+            sleep 5
+            continue
+        fi
+        return 1
+    done
+    log_error "Timed out waiting for apt/dpkg lock."
+    return 1
 }
 
 latest_version() {
@@ -220,7 +237,9 @@ install_support_files() {
     local script_dir="$1"
 
     if [[ -f "${script_dir}/new-api.sh" ]]; then
-        cp -f "${script_dir}/new-api.sh" "${INSTALL_DIR}/new-api.sh"
+        if [[ "${script_dir}/new-api.sh" != "${INSTALL_DIR}/new-api.sh" ]]; then
+            cp -f "${script_dir}/new-api.sh" "${INSTALL_DIR}/new-api.sh"
+        fi
     else
         log_warn "Local new-api.sh not found; downloading from ${RAW_BASE_URL}."
         download_file "${RAW_BASE_URL}/new-api.sh" "${INSTALL_DIR}/new-api.sh"
@@ -230,7 +249,9 @@ install_support_files() {
     chmod +x "${CLI_PATH}"
 
     if [[ -f "${script_dir}/install.sh" ]]; then
-        cp -f "${script_dir}/install.sh" "${INSTALL_DIR}/install.sh"
+        if [[ "${script_dir}/install.sh" != "${INSTALL_DIR}/install.sh" ]]; then
+            cp -f "${script_dir}/install.sh" "${INSTALL_DIR}/install.sh"
+        fi
         chmod +x "${INSTALL_DIR}/install.sh"
     fi
 
@@ -356,7 +377,8 @@ main() {
     fi
     log_info "Selected version: ${version}"
 
-    tmp_dir="$(mktemp -d)"
+    mkdir -p "${INSTALL_DIR}"
+    tmp_dir="$(mktemp -d "${INSTALL_DIR}/.install.XXXXXX")"
     trap 'rm -rf "${tmp_dir:-}"' EXIT
     DOWNLOADED_BINARY_PATH=""
     download_release "${version}" "${arch}" "${tmp_dir}"
