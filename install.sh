@@ -340,7 +340,7 @@ main() {
     log_info "Selected version: ${version}"
 
     tmp_dir="$(mktemp -d)"
-    trap 'rm -rf "${tmp_dir}"' EXIT
+    trap 'rm -rf "${tmp_dir:-}"' EXIT
     DOWNLOADED_BINARY_PATH=""
     download_release "${version}" "${arch}" "${tmp_dir}"
 
