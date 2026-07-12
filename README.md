@@ -24,14 +24,23 @@ Default runtime layout:
 
 ```bash
 new-api help
+new-api summary
 new-api status
 new-api log
 new-api restart
 new-api update
+new-api update-script
+new-api uri
 new-api set-port 3001
+new-api check
 new-api backup
 new-api restore /usr/local/new-api/backups/new-api-YYYYmmdd-HHMMSS.tar.gz
+new-api bbr status
+new-api bbr enable
+new-api bbr disable
 new-api uninstall
 ```
 
-The default deployment uses local SQLite and does not install Docker, Nginx, ACME, Redis, MySQL, or PostgreSQL.
+Fresh installs use New API's built-in Web initialization flow for the root account.
+
+The default deployment uses local SQLite and does not install Docker, Nginx, ACME, Redis, MySQL, or PostgreSQL. BBR is available as an optional system optimization command and is never enabled automatically during install.

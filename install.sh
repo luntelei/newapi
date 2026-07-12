@@ -290,13 +290,26 @@ print_result() {
     local port
     port="$(grep -E '^PORT=' "${ENV_FILE}" | tail -n 1 | cut -d= -f2-)"
     port="${port:-3000}"
+    local local_ip public_ip
+    local_ip="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
+    public_ip="$(curl -fsS --connect-timeout 2 --max-time 4 https://api4.ipify.org 2>/dev/null || true)"
+    if [[ -z "${public_ip}" ]]; then
+        public_ip="$(curl -4 -fsS --connect-timeout 2 --max-time 4 https://ifconfig.me 2>/dev/null || true)"
+    fi
 
     echo
     log_info "New API installation/update finished."
     echo -e "Access URL: ${green}http://127.0.0.1:${port}${plain}"
+    if [[ -n "${local_ip}" ]]; then
+        echo -e "LAN URL:    ${green}http://${local_ip}:${port}${plain}"
+    fi
+    if [[ -n "${public_ip}" ]]; then
+        echo -e "Public URL: ${green}http://${public_ip}:${port}${plain}"
+    fi
     echo -e "Config file: ${green}${ENV_FILE}${plain}"
     echo -e "Data dir:    ${green}${DATA_DIR}${plain}"
     echo -e "Logs:        ${green}new-api log${plain}"
+    echo -e "Root setup:  ${yellow}open the Web page and use New API's built-in initialization flow.${plain}"
     echo
     new-api help || true
 }
