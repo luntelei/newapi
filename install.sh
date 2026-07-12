@@ -118,19 +118,32 @@ ensure_env_var() {
     printf '%s=%s\n' "${key}" "${value}" >>"${ENV_FILE}"
 }
 
+fix_install_contexts() {
+    chmod 700 "${INSTALL_DIR}" 2>/dev/null || true
+    chmod 600 "${ENV_FILE}" 2>/dev/null || true
+    if command -v restorecon >/dev/null 2>&1; then
+        restorecon -R "${INSTALL_DIR}" "${SERVICE_PATH}" 2>/dev/null || true
+    elif command -v chcon >/dev/null 2>&1; then
+        chcon -t usr_t "${ENV_FILE}" "${BIN_PATH}" "${INSTALL_DIR}/new-api.sh" "${INSTALL_DIR}/install.sh" 2>/dev/null || true
+        chcon -t systemd_unit_file_t "${SERVICE_PATH}" 2>/dev/null || true
+    fi
+}
+
 set_env_var() {
     local key="$1"
     local value="$2"
     local tmp_file
-    tmp_file="$(mktemp)"
     touch "${ENV_FILE}"
+    tmp_file="$(mktemp "${INSTALL_DIR}/.env.XXXXXX")"
     awk -v key="${key}" -v value="${value}" '
         BEGIN { done = 0 }
         $0 ~ "^" key "=" { print key "=" value; done = 1; next }
         { print }
         END { if (done == 0) print key "=" value }
     ' "${ENV_FILE}" >"${tmp_file}"
+    chmod 600 "${tmp_file}"
     mv "${tmp_file}" "${ENV_FILE}"
+    fix_install_contexts
 }
 
 prepare_env() {
@@ -160,6 +173,7 @@ prepare_env() {
     else
         log_info "Kept existing ${ENV_FILE} and added missing defaults."
     fi
+    fix_install_contexts
 }
 
 download_file() {
@@ -240,6 +254,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
     fi
+    fix_install_contexts
 }
 
 install_binary() {
@@ -264,6 +279,7 @@ install_binary() {
     cp -f "${source_binary}" "${BIN_PATH}.new"
     chmod +x "${BIN_PATH}.new"
     mv -f "${BIN_PATH}.new" "${BIN_PATH}"
+    fix_install_contexts
 
     if ! systemctl daemon-reload; then
         log_error "systemctl daemon-reload failed."

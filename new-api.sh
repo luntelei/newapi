@@ -175,6 +175,17 @@ show_summary() {
     echo "Config:    ${ENV_FILE}"
 }
 
+fix_install_contexts() {
+    chmod 700 "${INSTALL_DIR}" 2>/dev/null || true
+    chmod 600 "${ENV_FILE}" 2>/dev/null || true
+    if command -v restorecon >/dev/null 2>&1; then
+        restorecon -R "${INSTALL_DIR}" "${SERVICE_PATH}" 2>/dev/null || true
+    elif command -v chcon >/dev/null 2>&1; then
+        chcon -t usr_t "${ENV_FILE}" "${BIN_PATH}" "${INSTALL_DIR}/new-api.sh" "${INSTALL_DIR}/install.sh" 2>/dev/null || true
+        chcon -t systemd_unit_file_t "${SERVICE_PATH}" 2>/dev/null || true
+    fi
+}
+
 set_env_var() {
     local key="$1"
     local value="$2"
@@ -182,15 +193,16 @@ set_env_var() {
     need_root
     mkdir -p "${INSTALL_DIR}"
     touch "${ENV_FILE}"
-    tmp_file="$(mktemp)"
+    tmp_file="$(mktemp "${INSTALL_DIR}/.env.XXXXXX")"
     awk -v key="${key}" -v value="${value}" '
         BEGIN { done = 0 }
         $0 ~ "^" key "=" { print key "=" value; done = 1; next }
         { print }
         END { if (done == 0) print key "=" value }
     ' "${ENV_FILE}" >"${tmp_file}"
+    chmod 600 "${tmp_file}"
     mv "${tmp_file}" "${ENV_FILE}"
-    chmod 600 "${ENV_FILE}"
+    fix_install_contexts
 }
 
 run_installer() {
@@ -338,6 +350,8 @@ restore_data() {
     mkdir -p "${INSTALL_DIR}"
     tar -xzf "${archive}" -C "${INSTALL_DIR}"
     chmod 600 "${ENV_FILE}" 2>/dev/null || true
+    fix_install_contexts
+    systemctl daemon-reload
     systemctl start "${SERVICE_NAME}"
     systemctl status "${SERVICE_NAME}" --no-pager -l
 }
