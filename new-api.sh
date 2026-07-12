@@ -7,7 +7,6 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 plain='\033[0m'
 
-APP_NAME="new-api"
 SERVICE_NAME="new-api"
 GITHUB_REPO="QuantumNous/new-api"
 INSTALL_DIR="/usr/local/new-api"
@@ -308,7 +307,8 @@ backup_data() {
     need_root
     check_install
     mkdir -p "${DATA_DIR}" "${LOG_DIR}" "${BACKUP_DIR}"
-    local backup_file="${BACKUP_DIR}/new-api-$(date +%Y%m%d-%H%M%S).tar.gz"
+    local backup_file
+    backup_file="${BACKUP_DIR}/new-api-$(date +%Y%m%d-%H%M%S).tar.gz"
     tar -czf "${backup_file}" -C "${INSTALL_DIR}" .env data logs
     chmod 600 "${backup_file}"
     log_info "Backup created: ${backup_file}"
@@ -426,7 +426,7 @@ bbr_status() {
     echo "Available:          $(available_congestion)"
     if [[ "$(current_congestion)" == "bbr" ]]; then
         log_info "BBR is active."
-    elif echo "$(available_congestion)" | grep -qw "bbr"; then
+    elif available_congestion | grep -qw "bbr"; then
         log_warn "BBR is available but not active."
     else
         log_warn "BBR is not listed as available by this kernel."
@@ -446,7 +446,8 @@ set_sysctl_kv() {
 }
 
 backup_sysctl_conf() {
-    local backup="/etc/sysctl.conf.new-api.bak.$(date +%Y%m%d%H%M%S)"
+    local backup
+    backup="/etc/sysctl.conf.new-api.bak.$(date +%Y%m%d%H%M%S)"
     cp -a /etc/sysctl.conf "${backup}" 2>/dev/null || touch "${backup}"
     echo "${backup}"
 }
@@ -458,7 +459,7 @@ enable_bbr() {
         bbr_status
         return
     fi
-    if ! echo "$(available_congestion)" | grep -qw "bbr"; then
+    if ! available_congestion | grep -qw "bbr"; then
         log_warn "This kernel does not report BBR as available. The change may fail."
     fi
     if ! confirm "Enable BBR by updating /etc/sysctl.conf?" "n"; then

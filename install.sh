@@ -7,7 +7,6 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 plain='\033[0m'
 
-APP_NAME="new-api"
 SERVICE_NAME="new-api"
 GITHUB_REPO="QuantumNous/new-api"
 INSTALL_DIR="/usr/local/new-api"
@@ -48,7 +47,7 @@ detect_release() {
 detect_arch() {
     case "$(uname -m)" in
     x86_64 | x64 | amd64) echo "amd64" ;;
-    armv8* | armv8 | arm64 | aarch64) echo "arm64" ;;
+    armv8* | arm64 | aarch64) echo "arm64" ;;
     *)
         log_error "Unsupported CPU architecture: $(uname -m). Only amd64 and arm64 are supported."
         exit 1
@@ -341,7 +340,7 @@ main() {
     log_info "Selected version: ${version}"
 
     tmp_dir="$(mktemp -d)"
-    trap "rm -rf '${tmp_dir}'" EXIT
+    trap 'rm -rf "${tmp_dir}"' EXIT
     DOWNLOADED_BINARY_PATH=""
     download_release "${version}" "${arch}" "${tmp_dir}"
 
