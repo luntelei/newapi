@@ -45,6 +45,8 @@ shellcheck install.sh new-api.sh
 
 For install or update behavior, test on a disposable Linux VPS whenever possible.
 
+The maintained test matrix is documented in [docs/test-cases.md](docs/test-cases.md).
+
 ## Pull Requests
 
 Please include:
