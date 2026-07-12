@@ -1,2 +1,9 @@
+/.gitattributes text eol=lf
+/LICENSE text eol=lf
+/.github/** text eol=lf
+/docs/** text eol=lf
 *.sh text eol=lf
 *.service text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
