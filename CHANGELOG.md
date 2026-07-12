@@ -12,7 +12,6 @@ The format follows a lightweight `Added`, `Changed`, `Fixed`, `Security`, and `C
 - Legal, disclaimer, security, contributing, and community documentation.
 - GitHub issue and pull request templates.
 - ShellCheck GitHub Actions workflow.
-- Detailed test case matrix.
 
 ## 0.1.0
 

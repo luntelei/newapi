@@ -115,10 +115,6 @@ new-api uninstall
 
 For vulnerability reports and hardening guidance, see [SECURITY.md](SECURITY.md).
 
-## Testing
-
-For the maintained test matrix and release acceptance checks, see [docs/test-cases.md](docs/test-cases.md).
-
 ## License And Upstream Attribution
 
 This repository's installer scripts, management scripts, service file, and documentation are licensed under the [Apache License 2.0](LICENSE).
