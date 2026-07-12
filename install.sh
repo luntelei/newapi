@@ -123,7 +123,8 @@ fix_install_contexts() {
     chmod 600 "${ENV_FILE}" 2>/dev/null || true
     if command -v restorecon >/dev/null 2>&1; then
         restorecon -R "${INSTALL_DIR}" "${SERVICE_PATH}" 2>/dev/null || true
-    elif command -v chcon >/dev/null 2>&1; then
+    fi
+    if command -v chcon >/dev/null 2>&1; then
         chcon -t usr_t "${ENV_FILE}" "${BIN_PATH}" "${INSTALL_DIR}/new-api.sh" "${INSTALL_DIR}/install.sh" 2>/dev/null || true
         chcon -t systemd_unit_file_t "${SERVICE_PATH}" 2>/dev/null || true
     fi
